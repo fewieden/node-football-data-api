@@ -5,6 +5,18 @@ const querystring = require('querystring');
 
 const VERSION = 'v1';
 const BASEURL = 'api.football-data.org';
+const HEADERS = {
+    auth: 'X-Auth-Token',
+    response: 'X-Response-Control'
+};
+const METADATA = {
+    context: 'x-application-context',
+    response: 'x-response-control',
+    version: 'x-api-version',
+    client: 'x-authenticated-client',
+    reset: 'x-requestcounter-reset',
+    available: 'x-requests-available'
+};
 
 class FootballData {
     constructor(options) {
@@ -61,24 +73,13 @@ class FootballData {
         const meta = {
             timestamp: Date.now()
         };
-
-        if (headers && Object.prototype.hasOwnProperty.call(headers, 'x-application-context')) {
-            meta.context = headers['x-application-context'];
-        }
-        if (headers && Object.prototype.hasOwnProperty.call(headers, 'x-response-control')) {
-            meta.response = headers['x-response-control'];
-        }
-        if (headers && Object.prototype.hasOwnProperty.call(headers, 'x-api-version')) {
-            meta.version = headers['x-api-version'];
-        }
-        if (headers && Object.prototype.hasOwnProperty.call(headers, 'x-authenticated-client')) {
-            meta.client = headers['x-authenticated-client'];
-        }
-        if (headers && Object.prototype.hasOwnProperty.call(headers, 'x-requestcounter-reset')) {
-            meta.reset = parseInt(headers['x-requestcounter-reset']);
-        }
-        if (headers && Object.prototype.hasOwnProperty.call(headers, 'x-requests-available')) {
-            meta.available = parseInt(headers['x-requests-available']);
+        if (headers) {
+            const keys = Object.keys(METADATA);
+            keys.forEach((type) => {
+                if (Object.prototype.hasOwnProperty.call(headers, METADATA[type])) {
+                    meta[type] = headers[METADATA[type]];
+                }
+            });
         }
 
         return meta;
@@ -135,7 +136,7 @@ class FootballData {
                     }
                 });
             }).on('error', (e) => {
-                console.error(`Got error: ${e.message}`);
+                reject({ status: 9000, error: e.message });
             });
         });
     }
@@ -143,12 +144,12 @@ class FootballData {
     buildHeaders() {
         const headers = {};
 
-        if (this.options.auth && FootballData.options().auth.test(this.options.auth)) {
-            headers['X-Auth-Token'] = this.options.auth;
-        }
-        if (this.options.response && FootballData.options().response.test(this.options.response)) {
-            headers['X-Response-Control'] = this.options.response;
-        }
+        const keys = Object.keys(HEADERS);
+        keys.forEach((type) => {
+            if (this.options[type] && FootballData.options()[type].test(this.options[type])) {
+                headers[HEADERS[type]] = this.options[type];
+            }
+        });
 
         return headers;
     }

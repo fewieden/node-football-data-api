@@ -19,5 +19,6 @@ ratings:
   - "**.js"
   - "**.md"
 exclude_paths: [
-  "node_modules/**/*"
+  "node_modules/**/*",
+  "test/**/*"
 ]
