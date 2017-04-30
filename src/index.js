@@ -77,7 +77,11 @@ class FootballData {
             const keys = Object.keys(METADATA);
             keys.forEach((type) => {
                 if (Object.prototype.hasOwnProperty.call(headers, METADATA[type])) {
-                    meta[type] = headers[METADATA[type]];
+                    if (isNaN(headers[METADATA[type]])) {
+                        meta[type] = headers[METADATA[type]];
+                    } else {
+                        meta[type] = parseInt(headers[METADATA[type]]);
+                    }
                 }
             });
         }
