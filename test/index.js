@@ -162,14 +162,12 @@ describe('FootballData', function () {
             });
 
             describe('timeFrame', function () {
-                it(`should match ${/^(p|n)[1-9]{1,2}$/.toString()}`, function () {
+                it(`should match ${/^(p|n)[1-9][0-9]?$/.toString()}`, function () {
                     const timeFrame = FootballData.filters().timeFrame;
                     expect('p5').to.match(timeFrame);
                     expect('n14').to.match(timeFrame);
-                    /**
-                     * FIXME: this should be true, but the regex doesnt allow 0 as second digit.
-                     */
-                    expect('n10').to.not.match(timeFrame);
+                    expect('n10').to.match(timeFrame);
+                    expect('n01').to.not.match(timeFrame);
                     expect('p145').to.not.match(timeFrame);
                     expect('p').to.not.match(timeFrame);
                     expect(436287).to.not.match(timeFrame);
@@ -197,20 +195,14 @@ describe('FootballData', function () {
             });
 
             describe('auth', function () {
-                it(`should match ${/^[a-z1-9]+$/.toString()}`, function () {
+                it(`should match ${/^[a-z0-9]+$/.toString()}`, function () {
                     const auth = FootballData.options().auth;
                     expect('foo23234').to.match(auth);
                     expect('23bar').to.match(auth);
                     expect('foobar').to.match(auth);
                     expect(436287).to.match(auth);
-                    /**
-                     * FIXME: this should be true, but the regex doesn't allow 0 as digit.
-                     */
-                    expect('foo0bar').to.not.match(auth);
-                    /**
-                     * FIXME: this should be true, but the regex doesn't allow 0 as digit.
-                     */
-                    expect(0).to.not.match(auth);
+                    expect('foo0bar').to.match(auth);
+                    expect(0).to.match(auth);
                     expect('fooXbar').to.not.match(auth);
                     expect(-1).to.not.match(auth);
                 });
