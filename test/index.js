@@ -548,7 +548,7 @@ describe('FootballData', function () {
             }, function (err) {
                 expect(err).to.be.deep.equal({
                     status: 200,
-                    error: 'Unexpected token o'
+                    error: 'Parsing Failed!'
                 });
             });
         });

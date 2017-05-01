@@ -136,7 +136,7 @@ class FootballData {
                             reject({ status, error: data.error });
                         }
                     } catch (e) {
-                        reject({ status, error: e.message });
+                        reject({ status, error: 'Parsing Failed!' });
                     }
                 });
             }).on('error', (e) => {
