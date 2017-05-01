@@ -58,13 +58,13 @@ class FootballData {
             head2head: /^[0-9]+$/,
             venue: /^away|home$/,
             league: /^[\w\d]{2,4}(,[\w\d]{2,4})*$/,
-            timeFrame: /^(p|n)[1-9]{1,2}$/
+            timeFrame: /^(p|n)[1-9][0-9]?$/
         };
     }
 
     static options() {
         return {
-            auth: /^[a-z1-9]+$/,
+            auth: /^[a-z0-9]+$/,
             response: /^(full|minified|compressed)$/
         };
     }
@@ -136,7 +136,7 @@ class FootballData {
                             reject({ status, error: data.error });
                         }
                     } catch (e) {
-                        reject({ status, error: e.message });
+                        reject({ status, error: 'Parsing Failed!' });
                     }
                 });
             }).on('error', (e) => {
