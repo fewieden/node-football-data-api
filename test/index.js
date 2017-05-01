@@ -3,9 +3,14 @@
 const FootballData = require('../src/index');
 const expect = require('chai').expect;
 const rewire = require('rewire');
+const nock = require('nock');
+
+const BASEURL = 'api.football-data.org';
+const VERSION = 'v1';
+const API = nock(`https://${BASEURL}`);
 
 /* global describe context it before after beforeEach */
-/* eslint-disable prefer-arrow-callback, no-unused-expressions, func-names, no-underscore-dangle */
+/* eslint-disable prefer-arrow-callback, no-unused-expressions, func-names, no-underscore-dangle, no-unused-vars */
 
 describe('FootballData', function () {
     context('constructor', function () {
@@ -241,15 +246,15 @@ describe('FootballData', function () {
             });
 
             describe('mock Date.now()', function () {
-                let fakeTimestamp;
+                let FakeTimestamp;
                 let revert;
 
                 before(function () {
-                    fakeTimestamp = rewire('../src/index');
+                    FakeTimestamp = rewire('../src/index');
                     const dateMock = {
                         now: () => 1
                     };
-                    revert = fakeTimestamp.__set__('Date', dateMock);
+                    revert = FakeTimestamp.__set__('Date', dateMock);
                 });
 
                 after(function () {
@@ -257,7 +262,7 @@ describe('FootballData', function () {
                 });
 
                 it('should match headers', function () {
-                    expect(fakeTimestamp.buildMetaData({
+                    expect(FakeTimestamp.buildMetaData({
                         'x-api-version': 'v1',
                         'x-authenticated-client': 'anonymous'
                     })).to.be.deep.equal({
@@ -268,7 +273,7 @@ describe('FootballData', function () {
                 });
 
                 it('should match all headers', function () {
-                    expect(fakeTimestamp.buildMetaData({
+                    expect(FakeTimestamp.buildMetaData({
                         'x-application-context': 'production',
                         'x-response-control': 'full',
                         'x-api-version': 'v1',
@@ -428,7 +433,215 @@ describe('FootballData', function () {
         });
     });
 
-    context.skip('get');
+    context('get', function () {
+        let FD;
+
+        beforeEach(function () {
+            FD = new FootballData();
+        });
+
+        it('should return promise', function () {
+            API.get(`/${VERSION}/testtype`)
+                .reply(200, { foo: 'bar' });
+
+            expect(FD.get({
+                hostname: BASEURL,
+                path: `/${VERSION}/testtype`
+            })).to.be.a('promise');
+        });
+
+        it('should reject promise status code 406', function () {
+            API.get(`/${VERSION}/teststatus406`)
+                .reply(200, '<?xml version="1.0" encoding="UTF-8"?><text><![CDATA[Hello World]]></text>', {
+                    'Content-Type': 'application/xml'
+                });
+
+            return FD.get({
+                hostname: BASEURL,
+                path: `/${VERSION}/teststatus406`
+            }).then(function (res) {
+                throw new Error('This should have rejected the promise.');
+            }, function (err) {
+                expect(err.status).to.be.equal(406);
+            });
+        });
+
+        it('should reject promise status code 400', function () {
+            API.get(`/${VERSION}/teststatus400`)
+                .reply(400, {
+                    error: 'Bad Request'
+                });
+
+            return FD.get({
+                hostname: BASEURL,
+                path: `/${VERSION}/teststatus400`
+            }).then(function (res) {
+                throw new Error('This should have rejected the promise.');
+            }, function (err) {
+                expect(err).to.be.deep.equal({
+                    status: 400,
+                    error: 'Bad Request'
+                });
+            });
+        });
+
+        it('should reject promise status code 403', function () {
+            API.get(`/${VERSION}/teststatus403`)
+                .reply(403, {
+                    error: 'Restricted Resource'
+                });
+
+            return FD.get({
+                hostname: BASEURL,
+                path: `/${VERSION}/teststatus403`
+            }).then(function (res) {
+                throw new Error('This should have rejected the promise.');
+            }, function (err) {
+                expect(err).to.be.deep.equal({
+                    status: 403,
+                    error: 'Restricted Resource'
+                });
+            });
+        });
+
+        it('should reject promise status code 404', function () {
+            API.get(`/${VERSION}/teststatus404`)
+                .reply(404, {
+                    error: 'Not found'
+                });
+
+            return FD.get({
+                hostname: BASEURL,
+                path: `/${VERSION}/teststatus404`
+            }).then(function (res) {
+                throw new Error('This should have rejected the promise.');
+            }, function (err) {
+                expect(err).to.be.deep.equal({
+                    status: 404,
+                    error: 'Not found'
+                });
+            });
+        });
+
+        it('should reject promise status code 429', function () {
+            API.get(`/${VERSION}/teststatus429`)
+                .reply(429, {
+                    error: 'Too Many Requests'
+                });
+
+            return FD.get({
+                hostname: BASEURL,
+                path: `/${VERSION}/teststatus429`
+            }).then(function (res) {
+                throw new Error('This should have rejected the promise.');
+            }, function (err) {
+                expect(err).to.be.deep.equal({
+                    status: 429,
+                    error: 'Too Many Requests'
+                });
+            });
+        });
+
+        it('should reject promise JSON.parse failed', function () {
+            API.get(`/${VERSION}/testJSONparsefailed`)
+                .reply(200, 'foobar', {
+                    'Content-Type': 'application/json'
+                });
+
+            return FD.get({
+                hostname: BASEURL,
+                path: `/${VERSION}/testJSONparsefailed`
+            }).then(function (res) {
+                throw new Error('This should have rejected the promise.');
+            }, function (err) {
+                expect(err).to.be.deep.equal({
+                    status: 200,
+                    error: 'Unexpected token o'
+                });
+            });
+        });
+
+        describe('successful', function () {
+            const data = [
+                {
+                    id: 394,
+                    caption: '1. Bundesliga 2015/16',
+                    league: 'BL1',
+                    year: '2015',
+                    numberOfTeams: 18,
+                    numberOfGames: 306,
+                    lastUpdated: '2015-10-25T19:06:29Z'
+                },
+                {
+                    id: 395,
+                    caption: '2. Bundesliga 2015/16',
+                    league: 'BL2"',
+                    year: '2015',
+                    numberOfTeams: 18,
+                    numberOfGames: 306,
+                    lastUpdated: '2015-10-25T19:06:59Z'
+                }
+            ];
+
+            const headers = {
+                'content-type': 'application/json;charset=UTF-8',
+                'x-application-context': 'application:production',
+                'x-requests-available': '98',
+                'x-requestcounter-reset': '86312',
+                'x-authenticated-client': 'anonymous',
+                'x-api-version': 'v1',
+                'x-response-control': 'full'
+            };
+
+            it('should resolve promise', function () {
+                API.get(`/${VERSION}/testsuccess`)
+                    .reply(200, data, headers);
+
+                return FD.get({
+                    hostname: BASEURL,
+                    path: `/${VERSION}/testsuccess`
+                }).then(function (res) {
+                    expect(res).to.be.deep.equal({ data });
+                }, function (err) {
+                    throw new Error('This should have resolved the promise.');
+                });
+            });
+
+            it('should resolve promise with meta data', function () {
+                const FakeTimestamp = rewire('../src/index');
+                const dateMock = {
+                    now: () => 1
+                };
+                const revert = FakeTimestamp.__set__('Date', dateMock);
+
+                API.get(`/${VERSION}/testsuccessmeta`)
+                    .reply(200, data, headers);
+
+                return new FakeTimestamp({
+                    meta: true
+                }).get({
+                    hostname: BASEURL,
+                    path: `/${VERSION}/testsuccessmeta`
+                }).then(function (res) {
+                    expect(res).to.be.deep.equal({
+                        data,
+                        meta: {
+                            timestamp: 1,
+                            context: 'application:production',
+                            response: 'full',
+                            version: 'v1',
+                            client: 'anonymous',
+                            reset: 86312,
+                            available: 98
+                        }
+                    });
+                    revert();
+                }, function (err) {
+                    throw new Error('This should have resolved the promise.');
+                });
+            });
+        });
+    });
 
     context.skip('competitions');
 });
