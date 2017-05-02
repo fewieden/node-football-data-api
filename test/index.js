@@ -4,13 +4,14 @@ const FootballData = require('../src/index');
 const expect = require('chai').expect;
 const rewire = require('rewire');
 const nock = require('nock');
+const sinon = require('sinon');
 
 const BASEURL = 'api.football-data.org';
 const VERSION = 'v1';
 const API = nock(`https://${BASEURL}`);
 
-/* global describe context it before after beforeEach */
-/* eslint-disable prefer-arrow-callback, no-unused-expressions, func-names, no-underscore-dangle, no-unused-vars */
+/* global describe context it before after beforeEach afterEach */
+/* eslint-disable prefer-arrow-callback, no-unused-expressions, func-names, no-underscore-dangle */
 
 describe('FootballData', function () {
     context('constructor', function () {
@@ -306,10 +307,10 @@ describe('FootballData', function () {
                 })).to.be.equal('?season=2017');
                 expect(FootballData.buildQueryFilters(['season'], {
                     season: 20170
-                })).to.be.equal('?');
+                })).to.be.empty;
                 expect(FootballData.buildQueryFilters(['season'], {
                     foo: 'bar'
-                })).to.be.equal('?');
+                })).to.be.empty;
             });
         });
     });
@@ -451,7 +452,7 @@ describe('FootballData', function () {
             return FD.get({
                 hostname: BASEURL,
                 path: `/${VERSION}/teststatus406`
-            }).then(function (res) {
+            }).then(function () {
                 throw new Error('This should have rejected the promise.');
             }, function (err) {
                 expect(err.status).to.be.equal(406);
@@ -467,7 +468,7 @@ describe('FootballData', function () {
             return FD.get({
                 hostname: BASEURL,
                 path: `/${VERSION}/teststatus400`
-            }).then(function (res) {
+            }).then(function () {
                 throw new Error('This should have rejected the promise.');
             }, function (err) {
                 expect(err).to.be.deep.equal({
@@ -486,7 +487,7 @@ describe('FootballData', function () {
             return FD.get({
                 hostname: BASEURL,
                 path: `/${VERSION}/teststatus403`
-            }).then(function (res) {
+            }).then(function () {
                 throw new Error('This should have rejected the promise.');
             }, function (err) {
                 expect(err).to.be.deep.equal({
@@ -505,7 +506,7 @@ describe('FootballData', function () {
             return FD.get({
                 hostname: BASEURL,
                 path: `/${VERSION}/teststatus404`
-            }).then(function (res) {
+            }).then(function () {
                 throw new Error('This should have rejected the promise.');
             }, function (err) {
                 expect(err).to.be.deep.equal({
@@ -524,7 +525,7 @@ describe('FootballData', function () {
             return FD.get({
                 hostname: BASEURL,
                 path: `/${VERSION}/teststatus429`
-            }).then(function (res) {
+            }).then(function () {
                 throw new Error('This should have rejected the promise.');
             }, function (err) {
                 expect(err).to.be.deep.equal({
@@ -543,12 +544,28 @@ describe('FootballData', function () {
             return FD.get({
                 hostname: BASEURL,
                 path: `/${VERSION}/testJSONparsefailed`
-            }).then(function (res) {
+            }).then(function () {
                 throw new Error('This should have rejected the promise.');
             }, function (err) {
                 expect(err).to.be.deep.equal({
                     status: 200,
                     error: 'Parsing Failed!'
+                });
+            });
+        });
+
+        it('should reject promise on connection error', function () {
+            API.get(`/${VERSION}/testConnectionProblem`)
+                .replyWithError('Connection Problem');
+            return FD.get({
+                hostname: BASEURL,
+                path: `/${VERSION}/testConnectionProblem`
+            }).then(function () {
+                throw new Error('This should have rejected the promise.');
+            }, function (err) {
+                expect(err).to.be.deep.equal({
+                    status: 9000,
+                    error: 'Connection Problem'
                 });
             });
         });
@@ -594,7 +611,7 @@ describe('FootballData', function () {
                     path: `/${VERSION}/testsuccess`
                 }).then(function (res) {
                     expect(res).to.be.deep.equal({ data });
-                }, function (err) {
+                }, function () {
                     throw new Error('This should have resolved the promise.');
                 });
             });
@@ -628,12 +645,72 @@ describe('FootballData', function () {
                         }
                     });
                     revert();
-                }, function (err) {
+                }, function () {
                     throw new Error('This should have resolved the promise.');
                 });
             });
         });
     });
 
-    context.skip('competitions');
+    context('competitions', function () {
+        const url = `/${VERSION}/competitions/`;
+        let FD;
+        let spy;
+
+        beforeEach(function () {
+            FD = new FootballData();
+            API.get(url)
+                .query(true)
+                .reply(200, { foo: 'bar' });
+            spy = sinon.spy(FD, 'get');
+        });
+
+        afterEach(function () {
+            spy.restore();
+        });
+
+        it('should return promise', function () {
+            expect(FD.competitions()).to.be.a('promise');
+        });
+
+        it('should set filter season 2017', function () {
+            return FD.competitions({
+                season: 2017
+            }).then(function () {
+                expect(spy.getCall(0).args[0].path).to.be.equal(`${url}?season=2017`);
+            }, function () {
+                throw new Error('This should have resolved the promise.');
+            });
+        });
+
+        it('should set filter season 2016', function () {
+            return FD.competitions({
+                season: 2016,
+                id: 20
+            }).then(function () {
+                expect(spy.getCall(0).args[0].path).to.be.equal(`${url}?season=2016`);
+            }, function () {
+                throw new Error('This should have resolved the promise.');
+            });
+        });
+
+        it('should set no filter', function () {
+            return FD.competitions({
+                season: 20165,
+                id: 20
+            }).then(function () {
+                expect(spy.getCall(0).args[0].path).to.be.equal(url);
+            }, function () {
+                throw new Error('This should have resolved the promise.');
+            });
+        });
+
+        it('should set no filter #2', function () {
+            return FD.competitions().then(function () {
+                expect(spy.getCall(0).args[0].path).to.be.equal(url);
+            }, function () {
+                throw new Error('This should have resolved the promise.');
+            });
+        });
+    });
 });

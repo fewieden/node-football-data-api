@@ -94,16 +94,18 @@ class FootballData {
             return '';
         }
 
-        const query = Object.assign({}, filters);
+        const queryObject = Object.assign({}, filters);
 
-        const keys = Object.keys(query);
+        const keys = Object.keys(queryObject);
         keys.forEach((filter) => {
-            if (whitelist.indexOf(filter) === -1 || !FootballData.filters()[filter].test(query[filter])) {
-                delete query[filter];
+            if (whitelist.indexOf(filter) === -1 || !FootballData.filters()[filter].test(queryObject[filter])) {
+                delete queryObject[filter];
             }
         });
 
-        return `?${querystring.stringify(query)}`;
+        const query = querystring.stringify(queryObject);
+
+        return query.length >= 1 ? `?${query}` : '';
     }
 
     get(options) {
