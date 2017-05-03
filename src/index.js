@@ -1,14 +1,55 @@
 'use strict';
 
+/**
+ * @file index.js
+ *
+ * @author fewieden
+ * @license MIT
+ *
+ * @see  https://github.com/fewieden/node-football-data-api
+ */
+
+/**
+ * @external https
+ * @see https://nodejs.org/api/https.html
+ */
 const https = require('https');
+
+/**
+ * @external querystring
+ * @see https://nodejs.org/api/querystring.html
+ */
 const querystring = require('querystring');
 
+/**
+ * API version that's beeing used.
+ * @const
+ * @type {string}
+ */
 const VERSION = 'v1';
+
+/**
+ * Base url of the API.
+ * @const
+ * @type {string}
+ */
 const BASEURL = 'api.football-data.org';
+
+/**
+ * All request headers.
+ * @const
+ * @type {Object.<string, string>}
+ */
 const HEADERS = {
     auth: 'X-Auth-Token',
     response: 'X-Response-Control'
 };
+
+/**
+ * All response headers.
+ * @const
+ * @type {Object.<string, string>}
+ */
 const METADATA = {
     context: 'x-application-context',
     response: 'x-response-control',
@@ -18,11 +59,32 @@ const METADATA = {
     available: 'x-requests-available'
 };
 
+/**
+ * Class representing the football-data API.
+ *
+ * @requires external:https
+ * @requires external:querystring
+ */
 class FootballData {
+    /**
+     * Constructor for FootballData class.
+     *
+     * @param {Object=} options - Options for FootballData.
+     * @param {string=} options.auth - Option to use API key to allow more requests.
+     * @param {boolean=} options.meta - Option to return meta data with response.
+     */
     constructor(options) {
+        /**
+         * @default {}
+         */
         this.options = options || {};
     }
 
+    /**
+     * Returns all available league abbrevations and their corresponding names.
+     *
+     * @returns {Object.<string, string>} Keys are the abbrevations and values represent their name.
+     */
     static leagueAbbrevations() {
         return {
             BL1: '1. Bundesliga',
@@ -50,6 +112,11 @@ class FootballData {
         };
     }
 
+    /**
+     * Returns all available filters for data querys.
+     *
+     * @returns {Object.<string, RegExp>} Keys are the filter names and values represent their valid regular expression.
+     */
     static filters() {
         return {
             id: /^[0-9]+$/,
@@ -62,6 +129,11 @@ class FootballData {
         };
     }
 
+    /**
+     * Returns all available class options.
+     *
+     * @returns {Object.<string, RegExp>} Keys are the option names and values represent their valid regular expression.
+     */
     static options() {
         return {
             auth: /^[a-z0-9]+$/,
@@ -69,6 +141,33 @@ class FootballData {
         };
     }
 
+    /**
+     * Builds response meta data based on response headers.
+     *
+     * @param {Object.<string, string>} headers - Response headers
+     * @returns {Object.<string, string|int>} Contains at least request timestamp.
+     *
+     * @example Headers
+     * {
+     *   'x-application-context': 'production',
+     *   'x-response-control': 'full',
+     *   'x-api-version': 'v1',
+     *   'x-authenticated-client': 'anonymous',
+     *   'x-requestcounter-reset': '4057',
+     *   'x-requests-available': '50'
+     * }
+     *
+     * @example Return
+     * {
+     *   timestamp: 1,
+     *   context: 'production',
+     *   response: 'full',
+     *   version: 'v1',
+     *   client: 'anonymous',
+     *   reset: 4057,
+     *   available: 50
+     * }
+     */
     static buildMetaData(headers) {
         const meta = {
             timestamp: Date.now()
@@ -89,6 +188,24 @@ class FootballData {
         return meta;
     }
 
+    /**
+     * Builds querystring filter based on whitelist.
+     *
+     * @param {string[]} whitelist - Allowed filter parameter.
+     * @param {Object.<string, *>} filters - Query filter
+     * @returns {string} Querystring or empty string if filter doesn't match the criteria.
+     *
+     * @example Whitelist
+     * ['season']
+     *
+     * @example Filters
+     * {
+     *   season: 2017
+     * }
+     *
+     * @example Return
+     * '?season=2017'
+     */
     static buildQueryFilters(whitelist, filters) {
         if (!Array.isArray(whitelist) || !(filters instanceof Object)) {
             return '';
@@ -108,6 +225,54 @@ class FootballData {
         return query.length >= 1 ? `?${query}` : '';
     }
 
+    /**
+     * Performs https get request API call.
+     *
+     * @param {Object} options - Https request options
+     * @returns {Promise} Rejects on error with error object.
+     * Resolves on success data.
+     *
+     * @example Options
+     * {
+     *   hostname: 'api.football-data.org',
+     *   path: '/v1/competitions/',
+     *   headers: {
+     *     'X-Auth-Token': 'YOUR_API_KEY',
+     *     'X-Response-Control': 'full'
+     *   }
+     * }
+     *
+     * @example Rejecting
+     * {
+     *   status: 400,
+     *   error: 'Bad Request'
+     * }
+     *
+     * @example Resolving
+     * {
+     *   data: [
+     *     {
+     *       id: 394,
+     *       caption: '1. Bundesliga 2015/16',
+     *       league: 'BL1',
+     *       year: '2015',
+     *       numberOfTeams: 18,
+     *       numberOfGames: 306,
+     *       lastUpdated: '2015-10-25T19:06:29Z'
+     *     },
+     *     {
+     *       id: 395,
+     *       caption: '2. Bundesliga 2015/16',
+     *       league: 'BL2"',
+     *       year: '2015',
+     *       numberOfTeams: 18,
+     *       numberOfGames: 306,
+     *       lastUpdated: '2015-10-25T19:06:59Z'
+     *     },
+     *     ...
+     *   ]
+     * }
+     */
     get(options) {
         return new Promise((resolve, reject) => {
             https.get(options, (res) => {
@@ -147,6 +312,17 @@ class FootballData {
         });
     }
 
+    /**
+     * Builds https request headers.
+     *
+     * @returns {Object.<string, string>}
+     *
+     * @example Return
+     * {
+     *   'X-Auth-Token': 'YOUR_API_KEY',
+     *   'X-Response-Control': 'full'
+     * }
+     */
     buildHeaders() {
         const headers = {};
 
@@ -160,14 +336,38 @@ class FootballData {
         return headers;
     }
 
-    buildOptions(path) {
+    /**
+     * Builds https request options.
+     *
+     * @param {string} route - API route
+     * @returns {{hostname: string, path: string, headers: Object.<string, string>}}
+     *
+     * @example Route
+     * 'competitions/'
+     *
+     * @example Return
+     * {
+     *   hostname: 'api.football-data.org',
+     *   path: '/v1/competitions/',
+     *   headers: {
+     *     'X-Auth-Token': 'YOUR_API_KEY',
+     *     'X-Response-Control': 'full'
+     *   }
+     * }
+     */
+    buildOptions(route) {
         return {
             hostname: BASEURL,
-            path: `/${VERSION}/${path}`,
+            path: `/${VERSION}/${route}`,
             headers: this.buildHeaders()
         };
     }
 
+    /**
+     * Shorthand function for get() on competitions route /v1/competitions/.
+     * @param {Object.<string, *>} filters - Query filter
+     * @returns {Promise} Returns get() response.
+     */
     competitions(filters) {
         return this.get(
             this.buildOptions(`competitions/${FootballData.buildQueryFilters(['season'], filters)}`)
