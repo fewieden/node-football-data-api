@@ -69,15 +69,29 @@ class FootballData {
     /**
      * Constructor for FootballData class.
      *
-     * @param {Object=} options - Options for FootballData.
-     * @param {string=} options.auth - Option to use API key to allow more requests.
-     * @param {boolean=} options.meta - Option to return meta data with response.
+     * @param {Object=} params - Parameters for FootballData.
+     * @param {string=} params.auth - Option to use API key to allow more requests.
+     * @param {boolean=} params.meta - Option to return meta data with response.
      */
-    constructor(options) {
+    constructor(params) {
         /**
          * @default {}
          */
-        this.options = options || {};
+        this.options = {};
+
+        if (params !== null && typeof params === 'object') {
+            if (Object.prototype.hasOwnProperty.call(params, 'auth') && FootballData.options().auth.test(params.auth)) {
+                this.options.auth = params.auth;
+            }
+
+            if (Object.prototype.hasOwnProperty.call(params, 'response') && FootballData.options().response.test(params.response)) {
+                this.options.response = params.response;
+            }
+
+            if (Object.prototype.hasOwnProperty.call(params, 'meta') && typeof params.meta === 'boolean') {
+                this.options.meta = params.meta;
+            }
+        }
     }
 
     /**

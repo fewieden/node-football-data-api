@@ -21,8 +21,25 @@ describe('FootballData', function () {
             expect(FD.options).to.be.deep.equal(options);
         });
 
+        it('should set all parameters as options', function () {
+            const options = {
+                auth: 'auth123',
+                response: 'full',
+                meta: true
+            };
+            const FD = new FootballData(options);
+            expect(FD.options).to.be.deep.equal(options);
+        });
+
         it('should set default options', function () {
-            const FD = new FootballData();
+            let FD = new FootballData();
+            expect(FD.options).to.be.deep.equal({});
+
+            FD = new FootballData({
+                auth: 'authFOO123',
+                response: 'extra',
+                meta: 'true'
+            });
             expect(FD.options).to.be.deep.equal({});
         });
     });
