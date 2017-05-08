@@ -125,7 +125,9 @@ class FootballData {
             head2head: /^[0-9]+$/,
             venue: /^away|home$/,
             league: /^[\w\d]{2,4}(,[\w\d]{2,4})*$/,
-            timeFrame: /^(p|n)[1-9][0-9]?$/
+            timeFrame: /^(p|n)[1-9][0-9]?$/,
+            timeFrameStart: /^\d\d\d\d-\d\d-\d\d$/,
+            timeFrameEnd: /^\d\d\d\d-\d\d-\d\d$/
         };
     }
 

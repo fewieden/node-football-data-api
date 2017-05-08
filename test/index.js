@@ -76,107 +76,123 @@ describe('FootballData', function () {
                 expect(FootballData.filters()).to.be.an('object');
             });
 
-            it('should have 7 keys', function () {
-                expect(Object.keys(FootballData.filters()).length).to.be.equal(7);
+            it('should have 9 keys', function () {
+                expect(Object.keys(FootballData.filters()).length).to.be.equal(9);
             });
 
             it('should match filter keys', function () {
                 expect(FootballData.filters()).to.have.all.keys(
-                    'id', 'matchday', 'season', 'head2head', 'venue', 'league', 'timeFrame'
+                    'id', 'matchday', 'season', 'head2head', 'venue', 'league', 'timeFrame', 'timeFrameStart', 'timeFrameEnd'
                 );
             });
 
-            describe('id', function () {
-                it(`should match ${/^[0-9]+$/.toString()}`, function () {
-                    const id = FootballData.filters().id;
-                    expect(436287).to.match(id);
-                    expect(0).to.match(id);
-                    expect(-1).to.not.match(id);
-                    expect('foo23234').to.not.match(id);
-                    expect('23bar').to.not.match(id);
-                });
+            it('should match id', function () {
+                const id = FootballData.filters().id;
+                expect(436287).to.match(id);
+                expect(0).to.match(id);
+                expect(-1).to.not.match(id);
+                expect('foo23234').to.not.match(id);
+                expect('23bar').to.not.match(id);
             });
 
-            describe('matchday', function () {
-                it(`should match ${/^[1-4]*[0-9]*$/.toString()}`, function () {
-                    const matchday = FootballData.filters().matchday;
-                    expect(436287).to.match(matchday);
-                    expect(0).to.match(matchday);
-                    expect(54).to.match(matchday);
-                    expect(-1).to.not.match(matchday);
-                    expect('foo23234').to.not.match(matchday);
-                    expect('23bar').to.not.match(matchday);
-                });
+            it('should match matchday', function () {
+                const matchday = FootballData.filters().matchday;
+                expect(436287).to.match(matchday);
+                expect(0).to.match(matchday);
+                expect(54).to.match(matchday);
+                expect(-1).to.not.match(matchday);
+                expect('foo23234').to.not.match(matchday);
+                expect('23bar').to.not.match(matchday);
             });
 
-            describe('season', function () {
-                it(`should match ${/^\d\d\d\d$/.toString()}`, function () {
-                    const season = FootballData.filters().season;
-                    expect(1998).to.match(season);
-                    expect(2017).to.match(season);
-                    expect(436287).to.not.match(season);
-                    expect(0).to.not.match(season);
-                    expect(54).to.not.match(season);
-                    expect(-1997).to.not.match(season);
-                    expect('foo23234').to.not.match(season);
-                    expect('23bar').to.not.match(season);
-                });
+            it('should match season', function () {
+                const season = FootballData.filters().season;
+                expect(1998).to.match(season);
+                expect(2017).to.match(season);
+                expect(436287).to.not.match(season);
+                expect(0).to.not.match(season);
+                expect(54).to.not.match(season);
+                expect(-1997).to.not.match(season);
+                expect('foo23234').to.not.match(season);
+                expect('23bar').to.not.match(season);
             });
 
-            describe('head2head', function () {
-                it(`should match ${/^[0-9]+$/.toString()}`, function () {
-                    const head2head = FootballData.filters().head2head;
-                    expect(436287).to.match(head2head);
-                    expect(0).to.match(head2head);
-                    expect(-1).to.not.match(head2head);
-                    expect('foo23234').to.not.match(head2head);
-                    expect('23bar').to.not.match(head2head);
-                });
+            it('should match head2head', function () {
+                const head2head = FootballData.filters().head2head;
+                expect(436287).to.match(head2head);
+                expect(0).to.match(head2head);
+                expect(-1).to.not.match(head2head);
+                expect('foo23234').to.not.match(head2head);
+                expect('23bar').to.not.match(head2head);
             });
 
-            describe('venue', function () {
-                it(`should match ${/^(away|home)$/.toString()}`, function () {
-                    const venue = FootballData.filters().venue;
-                    expect('away').to.match(venue);
-                    expect('home').to.match(venue);
-                    expect(436287).to.not.match(venue);
-                    expect(0).to.not.match(venue);
-                    expect(-1).to.not.match(venue);
-                    expect('foo23home234').to.not.match(venue);
-                    expect('23bar').to.not.match(venue);
-                });
+            it('should match venue', function () {
+                const venue = FootballData.filters().venue;
+                expect('away').to.match(venue);
+                expect('home').to.match(venue);
+                expect(436287).to.not.match(venue);
+                expect(0).to.not.match(venue);
+                expect(-1).to.not.match(venue);
+                expect('foo23home234').to.not.match(venue);
+                expect('23bar').to.not.match(venue);
             });
 
-            describe('league', function () {
-                it(`should match ${/^[\w\d]{2,4}(,[\w\d]{2,4})*$/.toString()}`, function () {
-                    const league = FootballData.filters().league;
-                    expect('BL1').to.match(league);
-                    expect('BL1,WC').to.match(league);
-                    expect('BL1,ECL56,WC').to.not.match(league);
-                    expect('ECL56,BL1,WC').to.not.match(league);
-                    expect(436287).to.not.match(league);
-                    expect(0).to.not.match(league);
-                    expect(-1).to.not.match(league);
-                    expect('foo23home').to.not.match(league);
-                    expect('23bar').to.not.match(league);
-                });
+            it('should match league', function () {
+                const league = FootballData.filters().league;
+                expect('BL1').to.match(league);
+                expect('BL1,WC').to.match(league);
+                expect('BL1,ECL56,WC').to.not.match(league);
+                expect('ECL56,BL1,WC').to.not.match(league);
+                expect(436287).to.not.match(league);
+                expect(0).to.not.match(league);
+                expect(-1).to.not.match(league);
+                expect('foo23home').to.not.match(league);
+                expect('23bar').to.not.match(league);
             });
 
-            describe('timeFrame', function () {
-                it(`should match ${/^(p|n)[1-9][0-9]?$/.toString()}`, function () {
-                    const timeFrame = FootballData.filters().timeFrame;
-                    expect('p5').to.match(timeFrame);
-                    expect('n14').to.match(timeFrame);
-                    expect('n10').to.match(timeFrame);
-                    expect('n01').to.not.match(timeFrame);
-                    expect('p145').to.not.match(timeFrame);
-                    expect('p').to.not.match(timeFrame);
-                    expect(436287).to.not.match(timeFrame);
-                    expect(0).to.not.match(timeFrame);
-                    expect(-1).to.not.match(timeFrame);
-                    expect('foo23home234').to.not.match(timeFrame);
-                    expect('23bar').to.not.match(timeFrame);
-                });
+            it('should match timeFrame', function () {
+                const timeFrame = FootballData.filters().timeFrame;
+                expect('p5').to.match(timeFrame);
+                expect('n14').to.match(timeFrame);
+                expect('n10').to.match(timeFrame);
+                expect('n01').to.not.match(timeFrame);
+                expect('p145').to.not.match(timeFrame);
+                expect('p').to.not.match(timeFrame);
+                expect(436287).to.not.match(timeFrame);
+                expect(0).to.not.match(timeFrame);
+                expect(-1).to.not.match(timeFrame);
+                expect('foo23home234').to.not.match(timeFrame);
+                expect('23bar').to.not.match(timeFrame);
+            });
+
+            it('should match timeFrameStart', function () {
+                const timeFrameStart = FootballData.filters().timeFrameStart;
+                expect('1999-12-31').to.match(timeFrameStart);
+                expect('2017-05-05').to.match(timeFrameStart);
+                expect('2005-10-17').to.match(timeFrameStart);
+                expect('17-05-05').to.not.match(timeFrameStart);
+                expect('2017/05/05').to.not.match(timeFrameStart);
+                expect('05-05-2017').to.not.match(timeFrameStart);
+                expect(436287).to.not.match(timeFrameStart);
+                expect(0).to.not.match(timeFrameStart);
+                expect(-1).to.not.match(timeFrameStart);
+                expect('foo2017-05-05234').to.not.match(timeFrameStart);
+                expect('23bar').to.not.match(timeFrameStart);
+            });
+
+            it('should match timeFrameEnd', function () {
+                const timeFrameEnd = FootballData.filters().timeFrameEnd;
+                expect('1999-12-31').to.match(timeFrameEnd);
+                expect('2017-05-05').to.match(timeFrameEnd);
+                expect('2005-10-17').to.match(timeFrameEnd);
+                expect('17-05-05').to.not.match(timeFrameEnd);
+                expect('2017/05/05').to.not.match(timeFrameEnd);
+                expect('05-05-2017').to.not.match(timeFrameEnd);
+                expect(436287).to.not.match(timeFrameEnd);
+                expect(0).to.not.match(timeFrameEnd);
+                expect(-1).to.not.match(timeFrameEnd);
+                expect('foo2017-05-05234').to.not.match(timeFrameEnd);
+                expect('23bar').to.not.match(timeFrameEnd);
             });
         });
 
@@ -195,33 +211,29 @@ describe('FootballData', function () {
                 );
             });
 
-            describe('auth', function () {
-                it(`should match ${/^[a-z0-9]+$/.toString()}`, function () {
-                    const auth = FootballData.options().auth;
-                    expect('foo23234').to.match(auth);
-                    expect('23bar').to.match(auth);
-                    expect('foobar').to.match(auth);
-                    expect(436287).to.match(auth);
-                    expect('foo0bar').to.match(auth);
-                    expect(0).to.match(auth);
-                    expect('fooXbar').to.not.match(auth);
-                    expect(-1).to.not.match(auth);
-                });
+            it('should match auth', function () {
+                const auth = FootballData.options().auth;
+                expect('foo23234').to.match(auth);
+                expect('23bar').to.match(auth);
+                expect('foobar').to.match(auth);
+                expect(436287).to.match(auth);
+                expect('foo0bar').to.match(auth);
+                expect(0).to.match(auth);
+                expect('fooXbar').to.not.match(auth);
+                expect(-1).to.not.match(auth);
             });
 
-            describe('response', function () {
-                it(`should match ${/^(full|minified|compressed)$/.toString()}`, function () {
-                    const response = FootballData.options().response;
-                    expect('full').to.match(response);
-                    expect('minified').to.match(response);
-                    expect('compressed').to.match(response);
-                    expect(436287).to.not.match(response);
-                    expect(0).to.not.match(response);
-                    expect(54).to.not.match(response);
-                    expect(-1).to.not.match(response);
-                    expect('foo2minified3234').to.not.match(response);
-                    expect('23bar').to.not.match(response);
-                });
+            it('should match response', function () {
+                const response = FootballData.options().response;
+                expect('full').to.match(response);
+                expect('minified').to.match(response);
+                expect('compressed').to.match(response);
+                expect(436287).to.not.match(response);
+                expect(0).to.not.match(response);
+                expect(54).to.not.match(response);
+                expect(-1).to.not.match(response);
+                expect('foo2minified3234').to.not.match(response);
+                expect('23bar').to.not.match(response);
             });
         });
 
@@ -317,6 +329,7 @@ describe('FootballData', function () {
 
     context('buildHeaders', function () {
         let FD;
+
         beforeEach(function () {
             FD = new FootballData();
         });
@@ -387,6 +400,7 @@ describe('FootballData', function () {
 
     context('buildOptions', function () {
         let FD;
+
         beforeEach(function () {
             FD = new FootballData();
         });
