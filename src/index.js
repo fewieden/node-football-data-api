@@ -244,6 +244,19 @@ class FootballData {
     }
 
     /**
+     * Shorthand function for get() on fixture route /v1/fixtures/{id}. It needs an id filter.
+     * @param {Object.<string, *>} filters - Query filter
+     * @returns {Promise} Returns get() response.
+     *
+     * @throws {Error} Throws error if the id has an invalid format.
+     */
+    fixture(filters) {
+        return this.get(
+            this.buildOptions(`fixtures/${FootballData.handleId(filters)}${FootballData.buildQueryFilters(['head2head'], filters)}`)
+        );
+    }
+
+    /**
      * Returns all available league abbrevations and their corresponding names.
      *
      * @returns {Object.<string, string>} Keys are the abbrevations and values represent their name.
@@ -388,6 +401,22 @@ class FootballData {
         const query = querystring.stringify(queryObject);
 
         return query.length >= 1 ? `?${query}` : '';
+    }
+
+    /**
+     * Checks if the id has a valid format.
+     *
+     * @param {Object} options - Object with property id.
+     * @returns {string|int} The valid id.
+     *
+     * @throws {Error} Throws error if the id has an invalid format.
+     */
+    static handleId(options) {
+        if (options && FootballData.filters().id.test(options.id)) {
+            return options.id;
+        }
+
+        throw new Error('Invalid id format!');
     }
 }
 

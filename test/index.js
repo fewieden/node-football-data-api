@@ -342,6 +342,22 @@ describe('FootballData', function () {
                 })).to.be.empty;
             });
         });
+
+        describe('handleId', function () {
+            it('should return id', function () {
+                expect(FootballData.handleId({ id: 1 })).to.be.equal(1);
+                expect(FootballData.handleId({ id: '1' })).to.be.equal('1');
+                expect(FootballData.handleId({ id: 1230475 })).to.be.equal(1230475);
+                expect(FootballData.handleId({ id: '1230475' })).to.be.equal('1230475');
+            });
+
+            it('should throw invalid format', function () {
+                expect(FootballData.handleId.bind(FootballData)).to.throw('Invalid id format!');
+                expect(FootballData.handleId.bind(FootballData, {})).to.throw('Invalid id format!');
+                expect(FootballData.handleId.bind(FootballData, { id: -1 })).to.throw('Invalid id format!');
+                expect(FootballData.handleId.bind(FootballData, { id: '14564e65' })).to.throw('Invalid id format!');
+            });
+        });
     });
 
     context('buildHeaders', function () {
@@ -742,6 +758,67 @@ describe('FootballData', function () {
             }, function () {
                 throw new Error('This should have resolved the promise.');
             });
+        });
+    });
+
+    context('fixture', function () {
+        const url = `/${VERSION}/fixtures/1`;
+        let FD;
+        let spy;
+
+        beforeEach(function () {
+            FD = new FootballData();
+            API.get(url)
+                .query(true)
+                .reply(200, { foo: 'bar' });
+            spy = sinon.spy(FD, 'get');
+        });
+
+        afterEach(function () {
+            spy.restore();
+        });
+
+        it('should return promise', function () {
+            expect(FD.fixture({ id: 1 })).to.be.a('promise');
+        });
+
+        it('should set filter head2head 5', function () {
+            return FD.fixture({
+                id: 1,
+                head2head: 5
+            }).then(function () {
+                expect(spy.getCall(0).args[0].path).to.be.equal(`${url}?head2head=5`);
+            }, function () {
+                throw new Error('This should have resolved the promise.');
+            });
+        });
+
+        it('should set filter head2head 15', function () {
+            return FD.fixture({
+                id: 1,
+                head2head: 15,
+                season: 2017
+            }).then(function () {
+                expect(spy.getCall(0).args[0].path).to.be.equal(`${url}?head2head=15`);
+            }, function () {
+                throw new Error('This should have resolved the promise.');
+            });
+        });
+
+        it('should set no filter', function () {
+            return FD.fixture({
+                season: 2017,
+                id: 1
+            }).then(function () {
+                expect(spy.getCall(0).args[0].path).to.be.equal(url);
+            }, function () {
+                throw new Error('This should have resolved the promise.');
+            });
+        });
+
+        it('should throw invalid id', function () {
+            expect(FD.fixture.bind(FD)).to.throw('Invalid id format!');
+            expect(FD.fixture.bind(FD, { head2head: 5 })).to.throw('Invalid id format!');
         });
     });
 });
