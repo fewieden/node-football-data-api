@@ -95,153 +95,6 @@ class FootballData {
     }
 
     /**
-     * Returns all available league abbrevations and their corresponding names.
-     *
-     * @returns {Object.<string, string>} Keys are the abbrevations and values represent their name.
-     */
-    static leagueAbbrevations() {
-        return {
-            BL1: '1. Bundesliga',
-            BL2: '2. Bundesliga',
-            BL3: '3. Bundesliga',
-            DFB: 'DFB-Pokal',
-            PL: 'Premiere League',
-            EL1: 'League One',
-            ELC: 'Championship',
-            FAC: 'FA-Cup',
-            SA: 'Serie A',
-            SB: 'Serie B',
-            PD: 'Primera Division',
-            SD: 'Segunda Division',
-            CDR: 'Copa del Rey',
-            FL1: 'Ligue 1',
-            FL2: 'Ligue 2',
-            DED: 'Eredivisie',
-            PPL: 'Primeira Liga',
-            GSL: 'Primeira Liga',
-            CL: 'Champions-League',
-            EL: 'UEFA-Cup',
-            EC: 'European-Cup of Nations',
-            WC: 'World-Cup'
-        };
-    }
-
-    /**
-     * Returns all available filters for data querys.
-     *
-     * @returns {Object.<string, RegExp>} Keys are the filter names and values represent their valid regular expression.
-     */
-    static filters() {
-        return {
-            id: /^[0-9]+$/,
-            matchday: /^[1-4]*[0-9]*$/,
-            season: /^\d\d\d\d$/,
-            head2head: /^[0-9]+$/,
-            venue: /^away|home$/,
-            league: /^[\w\d]{2,4}(,[\w\d]{2,4})*$/,
-            timeFrame: /^(p|n)[1-9][0-9]?$/,
-            timeFrameStart: /^\d\d\d\d-\d\d-\d\d$/,
-            timeFrameEnd: /^\d\d\d\d-\d\d-\d\d$/
-        };
-    }
-
-    /**
-     * Returns all available class options.
-     *
-     * @returns {Object.<string, RegExp>} Keys are the option names and values represent their valid regular expression.
-     */
-    static options() {
-        return {
-            auth: /^[a-z0-9]+$/,
-            response: /^(full|minified|compressed)$/
-        };
-    }
-
-    /**
-     * Builds response meta data based on response headers.
-     *
-     * @param {Object.<string, string>} headers - Response headers
-     * @returns {Object.<string, string|int>} Contains at least request timestamp.
-     *
-     * @example Headers
-     * {
-     *   'x-application-context': 'production',
-     *   'x-response-control': 'full',
-     *   'x-api-version': 'v1',
-     *   'x-authenticated-client': 'anonymous',
-     *   'x-requestcounter-reset': '4057',
-     *   'x-requests-available': '50'
-     * }
-     *
-     * @example Return
-     * {
-     *   timestamp: 1,
-     *   context: 'production',
-     *   response: 'full',
-     *   version: 'v1',
-     *   client: 'anonymous',
-     *   reset: 4057,
-     *   available: 50
-     * }
-     */
-    static buildMetaData(headers) {
-        const meta = {
-            timestamp: Date.now()
-        };
-        if (headers) {
-            const keys = Object.keys(METADATA);
-            keys.forEach((type) => {
-                if (Object.prototype.hasOwnProperty.call(headers, METADATA[type])) {
-                    if (isNaN(headers[METADATA[type]])) {
-                        meta[type] = headers[METADATA[type]];
-                    } else {
-                        meta[type] = parseInt(headers[METADATA[type]]);
-                    }
-                }
-            });
-        }
-
-        return meta;
-    }
-
-    /**
-     * Builds querystring filter based on whitelist.
-     *
-     * @param {string[]} whitelist - Allowed filter parameter.
-     * @param {Object.<string, *>} filters - Query filter
-     * @returns {string} Querystring or empty string if filter doesn't match the criteria.
-     *
-     * @example Whitelist
-     * ['season']
-     *
-     * @example Filters
-     * {
-     *   season: 2017
-     * }
-     *
-     * @example Return
-     * '?season=2017'
-     */
-    static buildQueryFilters(whitelist, filters) {
-        if (!Array.isArray(whitelist) || !(filters instanceof Object)) {
-            return '';
-        }
-
-        const queryObject = Object.assign({}, filters);
-
-        const keys = Object.keys(queryObject);
-        keys.forEach((filter) => {
-            if (whitelist.indexOf(filter) === -1 || !FootballData.filters()[filter].test(queryObject[filter])) {
-                delete queryObject[filter];
-            }
-        });
-
-        const query = querystring.stringify(queryObject);
-
-        return query.length >= 1 ? `?${query}` : '';
-    }
-
-    /**
      * Performs https get request API call.
      *
      * @param {Object} options - Https request options
@@ -388,6 +241,153 @@ class FootballData {
         return this.get(
             this.buildOptions(`competitions/${FootballData.buildQueryFilters(['season'], filters)}`)
         );
+    }
+
+    /**
+     * Returns all available league abbrevations and their corresponding names.
+     *
+     * @returns {Object.<string, string>} Keys are the abbrevations and values represent their name.
+     */
+    static leagueAbbrevations() {
+        return {
+            BL1: '1. Bundesliga',
+            BL2: '2. Bundesliga',
+            BL3: '3. Bundesliga',
+            DFB: 'DFB-Pokal',
+            PL: 'Premiere League',
+            EL1: 'League One',
+            ELC: 'Championship',
+            FAC: 'FA-Cup',
+            SA: 'Serie A',
+            SB: 'Serie B',
+            PD: 'Primera Division',
+            SD: 'Segunda Division',
+            CDR: 'Copa del Rey',
+            FL1: 'Ligue 1',
+            FL2: 'Ligue 2',
+            DED: 'Eredivisie',
+            PPL: 'Primeira Liga',
+            GSL: 'Primeira Liga',
+            CL: 'Champions-League',
+            EL: 'UEFA-Cup',
+            EC: 'European-Cup of Nations',
+            WC: 'World-Cup'
+        };
+    }
+
+    /**
+     * Returns all available filters for data querys.
+     *
+     * @returns {Object.<string, RegExp>} Keys are the filter names and values represent their valid regular expression.
+     */
+    static filters() {
+        return {
+            id: /^[0-9]+$/,
+            matchday: /^[1-4]*[0-9]*$/,
+            season: /^\d\d\d\d$/,
+            head2head: /^[0-9]+$/,
+            venue: /^away|home$/,
+            league: /^[\w\d]{2,4}(,[\w\d]{2,4})*$/,
+            timeFrame: /^(p|n)[1-9][0-9]?$/,
+            timeFrameStart: /^\d\d\d\d-\d\d-\d\d$/,
+            timeFrameEnd: /^\d\d\d\d-\d\d-\d\d$/
+        };
+    }
+
+    /**
+     * Returns all available class options.
+     *
+     * @returns {Object.<string, RegExp>} Keys are the option names and values represent their valid regular expression.
+     */
+    static options() {
+        return {
+            auth: /^[a-z0-9]+$/,
+            response: /^(full|minified|compressed)$/
+        };
+    }
+
+    /**
+     * Builds response meta data based on response headers.
+     *
+     * @param {Object.<string, string>} headers - Response headers
+     * @returns {Object.<string, string|int>} Contains at least request timestamp.
+     *
+     * @example Headers
+     * {
+     *   'x-application-context': 'production',
+     *   'x-response-control': 'full',
+     *   'x-api-version': 'v1',
+     *   'x-authenticated-client': 'anonymous',
+     *   'x-requestcounter-reset': '4057',
+     *   'x-requests-available': '50'
+     * }
+     *
+     * @example Return
+     * {
+     *   timestamp: 1,
+     *   context: 'production',
+     *   response: 'full',
+     *   version: 'v1',
+     *   client: 'anonymous',
+     *   reset: 4057,
+     *   available: 50
+     * }
+     */
+    static buildMetaData(headers) {
+        const meta = {
+            timestamp: Date.now()
+        };
+        if (headers) {
+            const keys = Object.keys(METADATA);
+            keys.forEach((type) => {
+                if (Object.prototype.hasOwnProperty.call(headers, METADATA[type])) {
+                    if (isNaN(headers[METADATA[type]])) {
+                        meta[type] = headers[METADATA[type]];
+                    } else {
+                        meta[type] = parseInt(headers[METADATA[type]]);
+                    }
+                }
+            });
+        }
+
+        return meta;
+    }
+
+    /**
+     * Builds querystring filter based on whitelist.
+     *
+     * @param {string[]} whitelist - Allowed filter parameter.
+     * @param {Object.<string, *>} filters - Query filter
+     * @returns {string} Querystring or empty string if filter doesn't match the criteria.
+     *
+     * @example Whitelist
+     * ['season']
+     *
+     * @example Filters
+     * {
+     *   season: 2017
+     * }
+     *
+     * @example Return
+     * '?season=2017'
+     */
+    static buildQueryFilters(whitelist, filters) {
+        if (!Array.isArray(whitelist) || !(filters instanceof Object)) {
+            return '';
+        }
+
+        const queryObject = Object.assign({}, filters);
+
+        const keys = Object.keys(queryObject);
+        keys.forEach((filter) => {
+            if (whitelist.indexOf(filter) === -1 || !FootballData.filters()[filter].test(queryObject[filter])) {
+                delete queryObject[filter];
+            }
+        });
+
+        const query = querystring.stringify(queryObject);
+
+        return query.length >= 1 ? `?${query}` : '';
     }
 }
 
